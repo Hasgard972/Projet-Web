@@ -1,0 +1,82 @@
+# docker-compose.yml
+services:
+  web:
+    build: .
+    container_name: api8inf349_app
+    ports:
+      - "5000:5000"
+    environment:
+      FLASK_APP: inf349
+      FLASK_DEBUG: "1"
+      REDIS_URL: redis://redis:6379
+      DB_HOST: db
+      DB_NAME: api8inf349
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_PORT: 5432
+    depends_on:
+      db:
+        condition: service_healthy # Attend que la BDD soit prête
+      redis:
+        condition: service_started
+    networks:
+      - inf349-network
+    command: /app/entrypoint.sh
+
+  db:
+    image: postgres:12
+    container_name: api8inf349_db
+    environment:
+      POSTGRES_DB: api8inf349
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - inf349-network
+    healthcheck: # Ajout d'un healthcheck pour s'assurer que Postgres est prêt
+      test: ["CMD-SHELL", "pg_isready -U postgres -d api8inf349"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:5
+    container_name: api8inf349_redis
+    ports:
+      - "6379:6379"
+    networks:
+      - inf349-network
+    healthcheck:
+        test: ["CMD", "redis-cli", "ping"]
+        interval: 5s
+        timeout: 5s
+        retries: 5
+
+  worker:
+    build: .
+    container_name: api8inf349_worker
+    command: rq worker
+    environment:
+      REDIS_URL: redis://redis:6379
+      DB_HOST: db
+      DB_NAME: api8inf349
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_PORT: 5432
+    depends_on:
+      redis:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+    networks:
+      - inf349-network
+
+volumes:
+  postgres_data:
+
+networks:
+  inf349-network:
+    driver: bridge

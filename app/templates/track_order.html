@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}Suivi de Commande{% endblock %}
+
+{% block content %}
+<style>
+    /* Conteneur principal qui centre tout */
+    .track-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 60vh; /* Prend une bonne partie de la hauteur de l'écran */
+        text-align: center;
+        padding: 2rem;
+    }
+
+    /* La "carte" qui contient le formulaire */
+    .track-card {
+        background: #ffffff;
+        padding: 2.5rem;
+        border-radius: 12px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 500px;
+    }
+
+    /* Style de l'icône */
+    .track-icon {
+        color: #4A90E2; /* Une couleur bleue primaire */
+        margin-bottom: 1.5rem;
+    }
+
+    .track-card h2 {
+        font-size: 1.75rem;
+        margin-bottom: 0.5rem;
+        color: #333;
+    }
+
+    .track-card p {
+        color: #777;
+        margin-bottom: 2rem;
+    }
+
+    /* Groupe pour l'input et le bouton */
+    .input-group {
+        display: flex;
+        border-radius: 8px;
+        overflow: hidden; /* Assure que les coins du bouton sont bien coupés */
+        border: 1px solid #ddd;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .input-group:focus-within {
+        border-color: #4A90E2;
+        box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.2);
+    }
+
+    #order_id {
+        flex-grow: 1; /* L'input prend toute la place disponible */
+        border: none;
+        padding: 1rem;
+        font-size: 1rem;
+        outline: none; /* On retire le contour par défaut au focus */
+    }
+
+    .track-button {
+        background-color: #4A90E2;
+        color: white;
+        border: none;
+        padding: 0 1.5rem;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    .track-button:hover {
+        background-color: #357ABD; /* Une teinte plus foncée au survol */
+    }
+</style>
+
+<div class="track-container">
+    <div class="track-card">
+
+        <!-- Icône SVG pour un look moderne -->
+        <div class="track-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 12c0-5.25-4.25-9.5-9.5-9.5S2.5 6.75 2.5 12s4.25 9.5 9.5 9.5"/><path d="M12 21.5c5.25 0 9.5-4.25 9.5-9.5S17.25 2.5 12 2.5"/><path d="M2.5 12h19"/><path d="M12 2.5c2.76 0 5 2.24 5 5s-2.24 5-5 5-5-2.24-5-5 2.24-5 5-5z"/></svg>
+        </div>
+
+        <h2>Suivre votre commande</h2>
+        <p>Entrez l'identifiant de votre commande pour voir son statut détaillé.</p>
+
+        <!-- On utilise une balise <form> pour une meilleure sémantique et accessibilité -->
+        <form id="track-form">
+            <div class="input-group">
+                <input type="number" id="order_id" placeholder="Ex: 12345" required>
+                <button type="submit" class="track-button">Suivre</button>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+<script>
+    // On écoute l'événement "submit" du formulaire
+    // Cela fonctionne avec un clic sur le bouton OU en appuyant sur "Entrée"
+    document.getElementById('track-form').addEventListener('submit', function(e) {
+        // Empêche le rechargement de la page par défaut
+        e.preventDefault();
+
+        const id = document.getElementById('order_id').value;
+        if (id) {
+            window.location.href = 'order/' + id;
+        }
+    });
+</script>
+{% endblock %}

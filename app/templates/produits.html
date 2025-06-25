@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Produits disponibles</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f7f7f7;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .products {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+        .card {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 15px;
+            width: 250px;
+        }
+        .card h3 {
+            margin-top: 0;
+        }
+        .in-stock {
+            color: green;
+        }
+        .out-stock {
+            color: red;
+        }
+        a {
+            display: block;
+            text-align: center;
+            margin-top: 30px;
+            color: #007BFF;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Produits disponibles</h1>
+    <div class="products">
+        {% for product in products %}
+        <div class="card">
+            <h3>{{ product.name }}</h3>
+            <p>Prix : {{ product.price }} €</p>
+            <p>Poids : {{ product.weight }} kg</p>
+            <p class="{{ 'in-stock' if product.in_stock else 'out-stock' }}">
+                {{ 'En stock' if product.in_stock else 'Rupture de stock' }}
+            </p>
+        </div>
+        {% endfor %}
+    </div>
+    <a href="/">← Retour à l'accueil</a>
+</body>
+</html>

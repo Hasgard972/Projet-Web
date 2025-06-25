@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Payer commande{% endblock %}
+{% block content %}
+<h2>Payer une commande</h2>
+
+<form id="pay-form">
+  <!-- Le champ order_id est utilisé par le script mais n'est ni une info de livraison, ni de paiement -->
+  <label>ID Commande :
+    <input type="number" name="order_id" required value="{{ order.id or '' }}" {% if order %}readonly{% endif %}>
+  </label>
+  <hr>
+
+  <!-- Groupe 1: Informations de livraison -->
+  <fieldset>
+    <legend>Informations de Livraison</legend>
+    <label>Email : <input type="email" name="email" required></label><br>
+    <label>Adresse : <input type="text" name="address" required></label><br>
+    <label>Code postal : <input type="text" name="postal_code" required></label><br>
+    <label>Ville : <input type="text" name="city" required></label><br>
+    <label>Province / État : <input type="text" name="province" required></label><br>
+    <label>Pays : <input type="text" name="country" required></label><br>
+  </fieldset>
+  <br>
+
+  <!-- Groupe 2: Informations de la carte de crédit -->
+  <fieldset>
+    <legend>Carte de Crédit</legend>
+    <label>Nom sur la carte : <input type="text" name="name" required></label><br>
+    <label>Numéro de carte : <input type="text" name="number" required pattern="\d{13,16}"></label><br> <!-- Validation simple -->
+    <label>Année d'expiration (YYYY) : <input type="number" name="expiration_year" required></label><br>
+    <label>Mois d'expiration (MM) : <input type="number" name="expiration_month" required></label><br>
+    <label>CVV : <input type="text" name="cvv" required pattern="\d{3,4}"></label><br> <!-- Validation simple -->
+  </fieldset>
+  <br>
+
+  <button type="submit">Payer</button>
+</form>
+
+<script>
+document.getElementById("pay-form").addEventListener("submit", function(e) {
+  e.preventDefault(); // Empêche la soumission classique du formulaire
+
+  // 1. Récupère toutes les données du formulaire sous forme d'un objet plat
+  const formData = Object.fromEntries(new FormData(this));
+  const order_id = formData.order_id;
+
+  // 2. Crée la structure JSON attendue par le backend
+  const payload = {
+    shipping_information: {
+      email: formData.email,
+      country: formData.country,
+      address: formData.address,
+      postal_code: formData.postal_code,
+      city: formData.city,
+      province: formData.province
+    },
+    credit_card: {
+      name: formData.name,
+      number: formData.number,
+      expiration_year: formData.expiration_year,
+      expiration_month: formData.expiration_month,
+      cvv: formData.cvv
+    }
+  };
+
+  // 3. Envoie la requête avec le corps (body) correctement formaté
+  fetch("/order/" + order_id, {
+    method: "POST", // ou "PUT" selon votre route
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload) // On envoie notre objet 'payload' structuré
+  }).then(res => {
+    // Le backend fait une redirection (redirect) en cas de succès.
+    // Le plus simple est de suivre cette redirection côté client.
+    if (res.ok) { // res.ok est vrai pour les statuts 200-299
+        alert("Paiement initié. Vous allez être redirigé...");
+        // Redirige le navigateur vers la page de la commande
+        window.location.href = res.url;
+    } else {
+      // En cas d'erreur, affiche le message d'erreur du backend
+      res.json().then(errorData => {
+          alert("Erreur: " + (errorData.error || "Une erreur inconnue est survenue."));
+      });
+    }
+  }).catch(err => {
+      console.error("Fetch error:", err);
+      alert("Erreur de connexion au serveur.");
+  });
+});
+</script>
+{% endblock %}

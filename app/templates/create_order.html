@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+{% block title %}Créer une commande{% endblock %}
+
+{% block content %}
+<style>
+    /* Thème de couleurs global */
+    :root {
+        --primary-color: #28a745; /* Vert pour "créer/ajouter" */
+        --primary-hover: #218838;
+        --secondary-color: #6c757d;
+        --danger-color: #dc3545;
+        --danger-hover: #c82333;
+        --background-color: #f4f7f9;
+        --card-background: #ffffff;
+        --text-color: #333;
+        --border-color: #e0e0e0;
+        --shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    }
+
+    /* Conteneur principal pour centrer la carte */
+    .create-order-container {
+        display: flex;
+        justify-content: center;
+        padding: 2rem;
+    }
+
+    /* Carte principale du formulaire */
+    .form-card {
+        background: var(--card-background);
+        padding: 2.5rem;
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        width: 100%;
+        max-width: 700px;
+    }
+
+    .form-card h2 {
+        text-align: center;
+        font-size: 1.75rem;
+        margin-bottom: 2rem;
+        color: var(--text-color);
+    }
+
+    /* Conteneur pour la liste dynamique de produits */
+    #products-container {
+        margin-bottom: 1.5rem;
+    }
+
+    /* Style pour chaque ligne de produit */
+    .product-entry {
+        display: grid;
+        grid-template-columns: 1fr 120px auto; /* ID (flexible), Quantité (fixe), Bouton (auto) */
+        gap: 1rem;
+        align-items: flex-end; /* Aligne les éléments en bas */
+        padding-bottom: 1rem;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        font-size: 0.9em;
+        color: var(--secondary-color);
+    }
+
+    .form-group input {
+        width: 100%;
+        padding: 0.8rem;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        font-size: 1rem;
+    }
+    .form-group input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.2);
+    }
+
+    /* Conteneur pour les boutons d'action */
+    .actions-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--border-color);
+    }
+
+    /* Style de base des boutons */
+    .btn {
+        width: 100%;
+        border: none;
+        padding: 1rem;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+        text-align: center;
+    }
+
+    .btn-primary {
+        background-color: var(--primary-color);
+        color: white;
+    }
+    .btn-primary:hover { background-color: var(--primary-hover); }
+
+    .btn-secondary {
+        background-color: transparent;
+        color: var(--secondary-color);
+        border: 2px solid var(--border-color);
+    }
+    .btn-secondary:hover {
+        background-color: var(--background-color);
+        border-color: var(--secondary-color);
+    }
+
+    .btn-danger {
+        background-color: var(--danger-color);
+        color: white;
+        padding: 0.6rem; /* Plus petit */
+        border-radius: 50%; /* Rond */
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .btn-danger:hover { background-color: var(--danger-hover); }
+
+</style>
+
+<div class="create-order-container">
+    <div class="form-card">
+        <h2>Créer une nouvelle commande</h2>
+
+        <form method="post" action="{{ url_for('routes.create_order_api') }}">
+
+            <div id="products-container">
+                <!-- La première ligne de produit, statique -->
+                <div class="product-entry">
+                    <div class="form-group">
+                        <label>ID Produit</label>
+                        <input type="number" name="id" placeholder="ID du produit" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Quantité</label>
+                        <input type="number" name="quantity" value="1" min="1" required>
+                    </div>
+                    <!-- Pas de bouton supprimer pour la première ligne -->
+                </div>
+            </div>
+
+            <div class="actions-container">
+                <!-- Bouton pour ajouter un autre produit -->
+                <button type="button" id="add-product-btn" class="btn btn-secondary">
+                    Ajouter un autre produit
+                </button>
+
+                <!-- Le bouton final pour soumettre -->
+                <button type="submit" class="btn btn-primary">
+                    Créer la commande
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const addProductBtn = document.getElementById('add-product-btn');
+    const productsContainer = document.getElementById('products-container');
+
+    addProductBtn.addEventListener('click', function () {
+        const newProductEntry = document.createElement('div');
+        newProductEntry.classList.add('product-entry');
+
+        // IMPORTANT : Le HTML généré ici correspond exactement à notre nouveau style
+        newProductEntry.innerHTML = `
+            <div class="form-group">
+                <label>ID Produit</label>
+                <input type="number" name="id" placeholder="ID du produit" required>
+            </div>
+            <div class="form-group">
+                <label>Quantité</label>
+                <input type="number" name="quantity" value="1" min="1" required>
+            </div>
+            <button type="button" class="btn btn-danger remove-product-btn" aria-label="Supprimer cet article">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            </button>
+        `;
+        productsContainer.appendChild(newProductEntry);
+    });
+
+    productsContainer.addEventListener('click', function (event) {
+        // La recherche du bouton se fait en remontant dans les parents de l'élément cliqué
+        const removeButton = event.target.closest('.remove-product-btn');
+        if (removeButton) {
+            removeButton.closest('.product-entry').remove();
+        }
+    });
+});
+</script>
+{% endblock %}

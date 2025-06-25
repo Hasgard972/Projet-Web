@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Projet Web{% endblock %}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background: #f8f9fa;
+            padding: 0 20px;
+            text-align: center;
+        }
+        header {
+            background: #007BFF;
+            color: white;
+            padding: 15px 0;
+        }
+        nav a {
+            margin: 0 15px;
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        main {
+            padding: 30px 0;
+        }
+        footer {
+            margin-top: 40px;
+            font-size: 0.9em;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Application de Commandes</h1>
+        <nav>
+            <a href="/">Accueil</a>
+            <a href="/products">Produits</a>
+            <a href="/create-order">Créer une commande</a>
+            <a href="/track-order">Suivre une commande</a>
+        </nav>
+    </header>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    <footer>
+        <p>&copy; {{ year }} - Projet Web API</p>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Commande #{{ order.id }}</title>
+    <style>
+        /* --- Variables de Couleurs & Thème Global --- */
+        :root {
+            --primary-color: #4A90E2;
+            --primary-hover: #357ABD;
+            --background-color: #f4f7f9;
+            --card-background: #ffffff;
+            --text-color: #333;
+            --subtle-text-color: #777;
+            --border-color: #e0e0e0;
+            --success-bg: #e8f5e9;
+            --success-text: #2e7d32;
+            --warning-bg: #fff3e0;
+            --warning-text: #ef6c00;
+            --info-bg: #e1f5fe;
+            --info-text: #0277bd;
+            --error-bg: #ffebee;
+            --error-text: #c62828;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        /* --- Reset & Styles de Base --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        header, main, footer {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        h1, h2, h3 {
+            color: var(--text-color);
+            margin-bottom: 1rem;
+        }
+        h1 { font-size: 2.5rem; }
+        h2 { font-size: 1.75rem; border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem; }
+        h3 { font-size: 1.25rem; }
+        ul { list-style: none; padding-left: 0; }
+        li { margin-bottom: 0.5rem; }
+        a { color: var(--primary-color); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        /* --- Layout Principal (2 colonnes) --- */
+        .container {
+            display: grid;
+            grid-template-columns: 1fr; /* Une colonne par défaut pour mobile */
+            gap: 2rem;
+        }
+        /* Passe à deux colonnes sur les écrans plus larges */
+        @media (min-width: 900px) {
+            .container {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        /* --- Style des Cartes --- */
+        .card {
+            background-color: var(--card-background);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: transform 0.2s ease-in-out;
+        }
+
+        /* --- Style des Statuts & Badges --- */
+        .status-badge {
+            display: inline-block;
+            padding: 0.25em 0.75em;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+        .status-paid { background-color: var(--success-bg); color: var(--success-text); }
+        .status-pending { background-color: var(--warning-bg); color: var(--warning-text); }
+        .status-waiting { background-color: var(--info-bg); color: var(--info-text); }
+
+        /* --- Style des Messages Flash --- */
+        .flash {
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid transparent;
+        }
+        .flash.success { background-color: var(--success-bg); border-color: var(--success-text); color: var(--success-text); }
+        .flash.error { background-color: var(--error-bg); border-color: var(--error-text); color: var(--error-text); }
+        .flash.info { background-color: var(--info-bg); border-color: var(--info-text); color: var(--info-text); }
+
+        /* --- Style des Formulaires --- */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 0.9em;
+            color: var(--subtle-text-color);
+        }
+        input[type="text"], input[type="email"], input[type="number"] {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+        }
+        button[type="submit"] {
+            width: 100%;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        button[type="submit"]:hover {
+            background-color: var(--primary-hover);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Commande #{{ order.id }}</h1>
+        <!-- Affichage des messages Flash -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </header>
+
+    <main>
+        <div class="container">
+            <!-- COLONNE DE GAUCHE : INFORMATIONS -->
+            <div class="info-column">
+                <div class="card">
+                    <h3>Statut</h3>
+                    <p>
+                        <span class="status-badge {{ 'status-paid' if order.paid else 'status-pending' if order.being_paid else 'status-waiting' }}">
+                            {% if order.paid %}✅ Payée
+                            {% elif order.being_paid %}⏳ Paiement en cours...
+                            {% else %}🕒 En attente de paiement
+                            {% endif %}
+                        </span>
+                    </p>
+                </div>
+
+                <div class="card">
+                    <h3>Produits</h3>
+                    <ul>
+                        {% for p in order.products %}
+                        <li>{{ p.name }} (ID {{ p.id }}) - <strong>Quantité : {{ p.quantity }}</strong></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                {% if order.paid or order.being_paid %}
+                <div class="card">
+                     <h3>Informations Client</h3>
+                     <p><strong>Email :</strong> {{ order.email or 'Non fourni' }}</p>
+
+                     <h4>Adresse de livraison</h4>
+                     <p>{{ order.shipping_information.address or 'N/A' }}<br>
+                        {{ order.shipping_information.postal_code or 'N/A' }} {{ order.shipping_information.city or 'N/A' }}<br>
+                        {{ order.shipping_information.province or 'N/A' }}, {{ order.shipping_information.country or 'N/A' }}
+                     </p>
+                </div>
+                <div class="card">
+                    <h3>Détails de la Transaction</h3>
+                    {% if order.transaction.id %}
+                        <p><strong>ID :</strong> {{ order.transaction.id }}</p>
+                        <p><strong>Succès :</strong> {{ "Oui" if order.transaction.success else "Non" }}</p>
+                        <p><strong>Montant :</strong> {{ order.transaction.amount_charged }} $</p>
+                    {% else %}
+                        <p>Aucune transaction enregistrée.</p>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- COLONNE DE DROITE : ACTIONS -->
+            <div class="actions-column">
+                {% if not order.paid and not order.being_paid %}
+                    <div class="card">
+                        <h2>Informations de Livraison</h2>
+                        <form id="shipping-form">
+                            <div class="form-group"><label for="email">Email</label><input id="email" type="email" name="email" value="{{ order.email or '' }}" required></div>
+                            <div class="form-group"><label for="address">Adresse</label><input id="address" type="text" name="address" value="{{ order.shipping_information.address or '' }}" required></div>
+                            <div class="form-group"><label for="city">Ville</label><input id="city" type="text" name="city" value="{{ order.shipping_information.city or '' }}" required></div>
+                            <div class="form-group"><label for="province">Province</label><input id="province" type="text" name="province" value="{{ order.shipping_information.province or '' }}" required></div>
+                            <div class="form-group"><label for="postal_code">Code Postal</label><input id="postal_code" type="text" name="postal_code" value="{{ order.shipping_information.postal_code or '' }}" required></div>
+                            <div class="form-group"><label for="country">Pays</label><input id="country" type="text" name="country" value="{{ order.shipping_information.country or '' }}" required></div>
+                            <button type="submit">Mettre à jour les informations</button>
+                        </form>
+                    </div>
+                    <div class="card">
+                        <h2>Paiement</h2>
+                        <form id="payment-form">
+                            <div class="form-group"><label for="name">Nom sur la carte</label><input id="name" type="text" name="name" required></div>
+                            <div class="form-group"><label for="number">Numéro de carte</label><input id="number" type="text" name="number" pattern="\d{13,16}" required></div>
+                            <div class="form-group"><label for="expiration_month">Mois d'expiration (MM)</label><input id="expiration_month" type="number" name="expiration_month" min="1" max="12" required></div>
+                            <div class="form-group"><label for="expiration_year">Année d'expiration (YYYY)</label><input id="expiration_year" type="number" name="expiration_year" required></div>
+                            <div class="form-group"><label for="cvv">CVV</label><input id="cvv" type="text" name="cvv" pattern="\d{3,4}" required></div>
+                            <button type="submit">Payer la commande</button>
+                        </form>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p><a href="/">Retour à l'accueil</a></p>
+    </footer>
+
+    <!-- Le script reste inchangé -->
+    <script>
+        // S'assurer que les formulaires n'existent que si la commande n'est pas payée
+        const shippingForm = document.getElementById('shipping-form');
+        const paymentForm = document.getElementById('payment-form');
+
+        if (shippingForm && paymentForm) {
+            const orderId = {{ order.id }};
+
+            shippingForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                const data = {
+                    shipping_information: {
+                        email: formData.get('email'), address: formData.get('address'), city: formData.get('city'),
+                        province: formData.get('province'), postal_code: formData.get('postal_code'), country: formData.get('country')
+                    }
+                };
+                fetch(`/order/${orderId}`, {
+                    method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data)
+                }).then(() => window.location.reload());
+            });
+
+            paymentForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                const data = {
+                    credit_card: {
+                        name: formData.get('name'), number: formData.get('number'), expiration_month: formData.get('expiration_month'),
+                        expiration_year: formData.get('expiration_year'), cvv: formData.get('cvv')
+                    }
+                };
+                fetch(`/order/${orderId}`, {
+                    method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data)
+                }).then(() => window.location.reload());
+            });
+        }
+    </script>
+</body>
+</html>
